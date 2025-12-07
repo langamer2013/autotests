@@ -1,11 +1,13 @@
 import paramiko
+import pytest
 import re
 from pprint import pprint
 from concurrent.futures import ThreadPoolExecutor
 
 client_ip = "192.168.50.252"
 server_ip = "192.168.50.251"
-
+vpp_ip = '192.168.50.252'
+   
 # Функция для выполнения списка команд на удаленной машине
 def execute_commands(host, username, password, commands):
     results = []
@@ -62,16 +64,15 @@ with ThreadPoolExecutor(max_workers=len(hosts_commands)) as executor:
         if host == server_ip:
             tcpdump_output = []
             for i in results[0][1].rstrip().split('\n'):
-                if re.findall(r'192.168.5', i):
-                    tcpdump_output.append(re.findall(r'192.168.5', i))
+                if re.findall(r'192.168.', i):
+                    tcpdump_output.append(re.findall(r'192.168.', i))
             #print(f'Host: {host}')
             #for command, output, error in results:
                 #print(f'Command: {command}\nOutput: \n{output}\nError: {error}\n')
 
-print(tcpdump_output)
+print(tcpdump_output[0][0])
 
-if tcpdump_output:
+if tcpdump_output[0][0]:
     print('Пинг прошел!')
 else:
     print("Тест провален!")
-
