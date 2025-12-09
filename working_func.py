@@ -13,7 +13,7 @@ def vpp_check_status(creds):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(hostname=ip, username=user, password=passwd)
-        stdin, stdout, stderr = client.exec_command('systemctl status sshd')
+        stdin, stdout, stderr = client.exec_command('sudo systemctl status sshd')
         output = stdout.read().decode()
         errors = stderr.read().decode()
         if errors:
@@ -28,11 +28,11 @@ def vpp_check_status(creds):
 #Функция заходит на VPP по ssh и делает стоп/старт демона vpp с интерфалом 10 секунд
 def vpp_stop_start(creds):
     list_commands = [
-    'systemctl stop systemd-journald.service',
-    'sleep 10',
-    'systemctl start systemd-journald.service',
-    'sleep 10',
-    'systemctl status systemd-journald.service'
+    'sudo systemctl stop systemd-journald.service',
+    'sudo sleep 10',
+    'sudo systemctl start systemd-journald.service',
+    'sudo sleep 10',
+    'sudo systemctl status systemd-journald.service'
 ]
     for user, passwd, ip in creds:
         client = paramiko.SSHClient()
@@ -46,7 +46,7 @@ def vpp_stop_start(creds):
             #    print('Не удалось перезапустить VPP, ошибка:')
             #    print(errors)
             #    sys.exit()
-            if comm == 'systemctl status systemd-journald.service':
+            if comm == 'sudo systemctl status systemd-journald.service':
                 if re.search(r'Loaded: loaded', output) and re.search(r'Active: active \(running\)', output):
                     return True
                 else:
@@ -75,7 +75,7 @@ def start_server(creds, listen_port):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(hostname=ip, username=user, password=passwd)
-        command = f'timeout 7s python3 /root/scripts/socket_server.py {listen_port}'
+        command = f'sudo timeout 7s python3 /root/scripts/socket_server.py {listen_port}'
         stdin, stdout, stderr = client.exec_command(command)
         output = stdout.read().decode()
         error = stderr.read().decode()
@@ -87,7 +87,7 @@ def start_client(creds, d_ip, dport, sport):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(hostname=ip, username=user, password=passwd)
-        command = f'python3 /root/scripts/socket_client.py {d_ip} {dport} {sport} '
+        command = f'sudo timeout 5s python3 /root/scripts/socket_client.py {d_ip} {dport} {sport} '
         stdin, stdout, stderr = client.exec_command(command)
         output = stdout.read().decode()
         error = stderr.read().decode()
@@ -100,7 +100,7 @@ def get_tcpdump(creds):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(hostname=ip, username=user, password=passwd)
-        stdin, stdout, stderr = client.exec_command('timeout 5s tcpdump -ni any')
+        stdin, stdout, stderr = client.exec_command('sudo timeout 10s tcpdump -ni any')
         dumped_traff = stdout.read().decode().split('\n')
         for line in dumped_traff:
             output.append(line)
