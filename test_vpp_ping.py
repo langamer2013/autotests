@@ -9,21 +9,21 @@ import time
 
 #Задаем параметры для подключения к окружению
 vpp_client = [
-    ['root',
-    'tester',
-    '192.168.50.252']
+    ['user1',
+    '!2345Qwert',
+    '192.168.255.52']
 ]
 
 vpp_serv = [
-    ['root',
-    'tester',
-    '192.168.50.251']
+    ['user1',
+    '!2345Qwert',
+    '192.168.255.51']
 ]
 
 vpp = [
-    ['root',
-    'tester',
-    '192.168.50.252']
+    ['user1',
+    '!2345Qwert',
+    '192.168.255.1']
 ]
 
 vpp_config_commands = [
@@ -35,9 +35,9 @@ vpp_config_commands = [
 #Задаем параметры генерации трафика
 
 #Задаем параметры поиска трафика
-parce_sip = '192.168.50.252'
+parce_sip = '172.16.200.2'
 parce_sport = '12345'
-parce_dip = '192.168.50.251'
+parce_dip = '172.16.100.2'
 parce_dport = '54321'
 
 #Проверяем статус впп
@@ -53,23 +53,19 @@ parce_dport = '54321'
 
 # Запуск функций параллельно в разных процессах
 with concurrent.futures.ThreadPoolExecutor() as executor:
-    #future_server = executor.submit(working_func.start_server, vpp_serv, parce_dport)
-    time.sleep(1)
+    future_server = executor.submit(working_func.start_server, vpp_serv, parce_dport)
     future_client = executor.submit(working_func.start_client, vpp_client, parce_dip, parce_dport, parce_sport)
     future_dump_collector = executor.submit(working_func.get_tcpdump, vpp_serv)
 
     result_dump = future_dump_collector.result()
 
+#print(result_dump)
 
-
-print(working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport))
+#print(working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport))
 
 
 
 def test_status(status=False):
-    if status == True:
-        return True
-       
-print(test_status(working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport)))
-
+    assert working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport) == True
+#print(test_status(working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport)))
 
