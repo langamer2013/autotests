@@ -75,12 +75,12 @@ def start_server(creds, listen_port):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(hostname=ip, username=user, password=passwd)
-        command = f'python3 /root/scripts/socket_server.py {listen_port}'
+        command = f'timeout 7s python3 /root/scripts/socket_server.py {listen_port}'
         stdin, stdout, stderr = client.exec_command(command)
         output = stdout.read().decode()
         error = stderr.read().decode()
 
-#Функция подключается на кдиента и запускает там питоновский скрипт который пытаелся открыть соединение
+#Функция подключается на кдиента и запускает там питоновский скрипт который пытается открыть соединение
 # ип порт и сурс порт задается как параметрами запуска
 def start_client(creds, d_ip, dport, sport):
     for user, passwd, ip in creds:
@@ -91,6 +91,7 @@ def start_client(creds, d_ip, dport, sport):
         stdin, stdout, stderr = client.exec_command(command)
         output = stdout.read().decode()
         error = stderr.read().decode()
+        print(error)
 
 # Функция для захвата трафика, возвращает список строк с дампом
 def get_tcpdump(creds):
@@ -112,17 +113,11 @@ def get_tcpdump(creds):
 #sport порт источника для поиска если задан
 #Список содержащий строки из дампа
 #Возвращает true если найдено совпадение в дампе иначе false
-def parce_dump(sip, dip, dport, lines, sport=None,):
-    if sport:
-        for line in lines:
-            if sip + '.' + sport in line and dip + '.' + dport in line:
-                return True
-            else:
-                return False
-    elif sip:
-        for line in lines:
-            if sip in line and dip + '.' + dport in line:
-                return True
-            else:
-                return False
+def parce_dump(sip, dip, dport, lines, sport=None):
+    finded = False
+    to_find = f"{sip}.{sport} > {dip}.{dport}"
+    for line in lines:
+        if to_find in line:
+            finded = True
+            return finded
 
