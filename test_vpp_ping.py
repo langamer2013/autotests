@@ -1,53 +1,70 @@
 
-import paramiko
 import pytest
-import re
-from pprint import pprint
-from concurrent.futures import ThreadPoolExecutor
 import sys
-import time
+from pprint import pprint
 import concurrent.futures
-import socket
 import working_func
 
-server_ip = '192.168.50.251'
-server_dport = 80
-cont = '123'
-cont = cont.encode("utf-8")
-
-#Задаем параметры для подключения к VPP
-vpp_serv = [
-    ['root',
-    'tester',
-    '192.168.50.251']
-]
-
+#Задаем параметры для подключения к окружению
 vpp_client = [
     ['root',
     'tester',
     '192.168.50.252']
 ]
 
-list_commands = [
+vpp_serv = [
+    ['root',
+    'tester',
+    '192.168.50.251']
+]
+
+vpp = [
+    ['root',
+    'tester',
+    '192.168.50.252']
+]
+
+vpp_config_commands = [
     'date',
     'sleep 5',
     'date'
 ]
 
-dump = working_func.get_tcpdump(vpp_serv)
-pprint(dump)
+#Задаем параметры генерации трафика
 
+#Задаем параметры поиска трафика
+parce_sip = '192.168.50.126'
+parce_sport = '50'
+parce_dip = '192.168.50.251'
+parce_dport = '22'
 
+#Проверяем статус впп
+#if working_func.vpp_check_status(vpp):
+#    pass
+#else:
+#    print('VPP не запущен на сервере!')
+#    sys.exit()
+
+#working_func.vpp_stop_start(vpp)
+
+#working_func.vpp_configuring(vpp, vpp_config_commands)
 
 # Запуск функций параллельно в разных процессах
-#with concurrent.futures.ThreadPoolExecutor() as executor:
-#    future1 = executor.submit(vpp_configuring, vpp_cred1, list_commands)
-#    future2 = executor.submit(vpp_configuring, vpp_cred2, list_commands)
-#
-#    result1 = future1.result()
-#    result2 = future2.result()
-#
-#print(result1)
-#print(result2)
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    future_client = executor.submit(working_func.start_client, vpp_client, parce_dip, parce_dport)
+    future_server = executor.submit(working_func.start_server, vpp_serv, parce_dport)
+    future_dump_collector = executor.submit(working_func.get_tcpdump, vpp_serv)
+
+    result_dump = future_dump_collector.result()
+    
+
+
+def test_status(status):
+    if status:
+        return True
+            
+print(test_status(working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump)))
+
+
 
 

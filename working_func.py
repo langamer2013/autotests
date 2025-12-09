@@ -79,8 +79,6 @@ def start_server(creds, listen_port):
         stdin, stdout, stderr = client.exec_command(command)
         output = stdout.read().decode()
         error = stderr.read().decode()
-        print(output)
-        print(error)
 
 #Функция подключается на кдиента и запускает там питоновский скрипт который пытаелся открыть соединение
 # ип порт и сурс порт задается как параметрами запуска
@@ -107,4 +105,24 @@ def get_tcpdump(creds):
             output.append(line)
     return output
 
+#Функция парсинга полученного дампа на приедмет наличия в нем необходимого трафика
+#sip - ип источника для поиска 
+#dip ип назначения для поиска
+#dport порт назначения для поиска
+#sport порт источника для поиска если задан
+#Список содержащий строки из дампа
+#Возвращает true если найдено совпадение в дампе иначе false
+def parce_dump(sip, dip, dport, lines, sport=None,):
+    if sport:
+        for line in lines:
+            if sip + '.' + sport in line and dip + '.' + dport in line:
+                return True
+            else:
+                return False
+    elif sip:
+        for line in lines:
+            if sip in line and dip + '.' + dport in line:
+                return True
+            else:
+                return False
 
