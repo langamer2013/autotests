@@ -93,8 +93,18 @@ def start_client(creds, d_ip, dport, sport):
         stdin, stdout, stderr = client.exec_command(command)
         output = stdout.read().decode()
         error = stderr.read().decode()
-        print(output)
-        print(error)
 
+# Функция для захвата трафика, возвращает список строк с дампом
+def get_tcpdump(creds):
+    output = []
+    for user, passwd, ip in creds:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(hostname=ip, username=user, password=passwd)
+        stdin, stdout, stderr = client.exec_command('timeout 5s tcpdump -ni any')
+        dumped_traff = stdout.read().decode().split('\n')
+        for line in dumped_traff:
+            output.append(line)
+    return output
 
 

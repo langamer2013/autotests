@@ -8,6 +8,7 @@ import sys
 import time
 import concurrent.futures
 import socket
+import working_func
 
 server_ip = '192.168.50.251'
 server_dport = 80
@@ -33,20 +34,8 @@ list_commands = [
     'date'
 ]
 
-def start_client(creds, d_ip, dport, sport):
-    for user, passwd, ip in creds:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(hostname=ip, username=user, password=passwd)
-        command = f'python3 /root/scripts/socket_client.py {d_ip} {dport} {sport} '
-        stdin, stdout, stderr = client.exec_command(command)
-        output = stdout.read().decode()
-        error = stderr.read().decode()
-        print(output)
-        print(error)
-
-start_client(vpp_client, '192.168.50.251', 80, 666)
-
+dump = working_func.get_tcpdump(vpp_serv)
+pprint(dump)
 
 
 
