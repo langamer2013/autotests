@@ -1,29 +1,23 @@
-
-import pytest
-import sys
-from pprint import pprint
 import concurrent.futures
 import working_func
-import paramiko
-import time
 
-#Задаем параметры для подключения к окружению
+# Задаем параметры для подключения к окружению
 vpp_client = [
     ['user1',
-    '!2345Qwert',
-    '192.168.255.52']
+     '!2345Qwert',
+     '192.168.255.52']
 ]
 
 vpp_serv = [
     ['user1',
-    '!2345Qwert',
-    '192.168.255.51']
+     '!2345Qwert',
+     '192.168.255.51']
 ]
 
 vpp = [
     ['user1',
-    '!2345Qwert',
-    '192.168.255.1']
+     '!2345Qwert',
+     '192.168.255.1']
 ]
 
 vpp_config_commands = [
@@ -59,13 +53,12 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
 
     result_dump = future_dump_collector.result()
 
+
 #print(result_dump)
 
 #print(working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport))
 
 
-
 def test_status(status=False):
     assert working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport) == True
 #print(test_status(working_func.parce_dump(parce_sip, parce_dip, parce_dport, result_dump, parce_sport)))
-

@@ -5,13 +5,15 @@ import random
 
 ports = random.randrange(100, 1000)
 print(ports)
-list = [1, 5, 6, 7]
+some_list = [1, 5, 6, 7]
 
-def test(list):
-    a, b, c, d = list
+
+def test(lst):
+    a, b, c, d = lst
     print(a)
     print(b)
     print(c)
     print(d)
 
-test(list)
+
+test(some_list)

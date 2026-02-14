@@ -7,7 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 client_ip = "192.168.50.252"
 server_ip = "192.168.50.251"
 vpp_ip = '192.168.50.252'
-   
+
+
 # Функция для выполнения списка команд на удаленной машине
 def execute_commands(host, username, password, commands):
     results = []
@@ -15,27 +16,28 @@ def execute_commands(host, username, password, commands):
         # Создаем SSH клиент
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        
+
         # Подключаемся к удаленной машине
         client.connect(hostname=host, username=username, password=password)
-        
+
         for command in commands:
             # Выполняем команду
             stdin, stdout, stderr = client.exec_command(command)
-            
+
             # Получаем вывод команды
             output = stdout.read().decode()
             error = stderr.read().decode()
-            
+
             # Сохраняем результат
             results.append((command, output, error))
-        
+
         # Закрываем соединение
         client.close()
         return (host, results)
-    
+
     except Exception as e:
         return (host, str(e))
+
 
 # Список виртуальных машин с соответствующими командами
 hosts_commands = [
@@ -58,7 +60,9 @@ hosts_commands = [
 with ThreadPoolExecutor(max_workers=len(hosts_commands)) as executor:
     futures = []
     for host_info in hosts_commands:
-        futures.append(executor.submit(execute_commands, host_info['host'], host_info['username'], host_info['password'], host_info['commands']))      
+        futures.append(
+            executor.submit(execute_commands, host_info['host'], host_info['username'], host_info['password'],
+                            host_info['commands']))
     for future in futures:
         host, results = future.result()
         if host == server_ip:
@@ -66,9 +70,9 @@ with ThreadPoolExecutor(max_workers=len(hosts_commands)) as executor:
             for i in results[0][1].rstrip().split('\n'):
                 if re.findall(r'192.168.', i):
                     tcpdump_output.append(re.findall(r'192.168.', i))
-            #print(f'Host: {host}')
-            #for command, output, error in results:
-                #print(f'Command: {command}\nOutput: \n{output}\nError: {error}\n')
+#            print(f'Host: {host}')
+#            for command, output, error in results:
+#           print(f'Command: {command}\nOutput: \n{output}\nError: {error}\n')
 
 print(tcpdump_output[0][0])
 
