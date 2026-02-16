@@ -1,13 +1,11 @@
-import paramiko
-import pytest
 import re
-from pprint import pprint
-from concurrent.futures import ThreadPoolExecutor
 import sys
 import time
-import socket
 
-#Функция заходит на VPP по ssh и проверяет статус демона, если активен - возвращает True, нет - возвращает False
+import paramiko
+
+
+# Функция заходит на VPP по ssh и проверяет статус демона, если активен - возвращает True, нет - возвращает False
 def vpp_check_status(creds):
     for user, passwd, ip in creds:
         client = paramiko.SSHClient()
@@ -25,15 +23,16 @@ def vpp_check_status(creds):
         else:
             return False
 
-#Функция заходит на VPP по ssh и делает стоп/старт демона vpp с интерфалом 10 секунд
+
+# Функция заходит на VPP по ssh и делает стоп/старт демона vpp с интерфалом 10 секунд
 def vpp_stop_start(creds):
     list_commands = [
-    'sudo systemctl stop systemd-journald.service',
-    'sudo sleep 10',
-    'sudo systemctl start systemd-journald.service',
-    'sudo sleep 10',
-    'sudo systemctl status systemd-journald.service'
-]
+        'sudo systemctl stop systemd-journald.service',
+        'sudo sleep 10',
+        'sudo systemctl start systemd-journald.service',
+        'sudo sleep 10',
+        'sudo systemctl status systemd-journald.service'
+    ]
     for user, passwd, ip in creds:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -42,17 +41,18 @@ def vpp_stop_start(creds):
             stdin, stdout, stderr = client.exec_command(comm)
             output = stdout.read().decode()
             errors = stderr.read().decode()
-            #if errors:
-            #    print('Не удалось перезапустить VPP, ошибка:')
-            #    print(errors)
-            #    sys.exit()
+#             if errors:
+#                print('Не удалось перезапустить VPP, ошибка:')
+#                print(errors)
+#                sys.exit()
             if comm == 'sudo systemctl status systemd-journald.service':
                 if re.search(r'Loaded: loaded', output) and re.search(r'Active: active \(running\)', output):
                     return True
                 else:
                     return False
 
-#Функция заходит на VPP по ssh и выполняет команды по настройке
+
+# Функция заходит на VPP по ssh и выполняет команды по настройке
 def vpp_configuring(creds, commands):
     for user, passwd, ip in creds:
         client = paramiko.SSHClient()
@@ -68,7 +68,8 @@ def vpp_configuring(creds, commands):
                 print(errors)
                 sys.exit()
 
-#Функция подключается на сервер и запускает там питоновский скрипт который слушает сокет на определенном порту, 
+
+# Функция подключается на сервер и запускает там питоновский скрипт который слушает сокет на определенном порту,
 # порт передает как аргумет для запуска
 def start_server(creds, listen_port):
     for user, passwd, ip in creds:
@@ -80,7 +81,8 @@ def start_server(creds, listen_port):
         output = stdout.read().decode()
         error = stderr.read().decode()
 
-#Функция подключается на кдиента и запускает там питоновский скрипт который пытается открыть соединение
+
+# Функция подключается на кдиента и запускает там питоновский скрипт который пытается открыть соединение
 # ип порт и сурс порт задается как параметрами запуска
 def start_client(creds, d_ip, dport, sport):
     for user, passwd, ip in creds:
@@ -92,6 +94,7 @@ def start_client(creds, d_ip, dport, sport):
         output = stdout.read().decode()
         error = stderr.read().decode()
         print(error)
+
 
 # Функция для захвата трафика, возвращает список строк с дампом
 def get_tcpdump(creds):
@@ -106,13 +109,14 @@ def get_tcpdump(creds):
             output.append(line)
     return output
 
-#Функция парсинга полученного дампа на приедмет наличия в нем необходимого трафика
-#sip - ип источника для поиска 
-#dip ип назначения для поиска
-#dport порт назначения для поиска
-#sport порт источника для поиска если задан
-#Список содержащий строки из дампа
-#Возвращает true если найдено совпадение в дампе иначе false
+
+# Функция парсинга полученного дампа на приедмет наличия в нем необходимого трафика
+# sip - ип источника для поиска
+# dip ип назначения для поиска
+# dport порт назначения для поиска
+# sport порт источника для поиска если задан
+# Список содержащий строки из дампа
+# Возвращает true если найдено совпадение в дампе иначе false
 def parce_dump(sip, dip, dport, lines, sport=None):
     finded = False
     to_find = f"{sip}.{sport} > {dip}.{dport}"
@@ -120,4 +124,5 @@ def parce_dump(sip, dip, dport, lines, sport=None):
         if to_find in line:
             finded = True
             return finded
-
+        else:
+            return None

@@ -1,14 +1,12 @@
-import paramiko
-import pytest
 import re
-from pprint import pprint
-from concurrent.futures import ThreadPoolExecutor
 import sys
 import time
-import socket
+
+import paramiko
 import pexpect
 
-#Функция заходит на VPP по ssh и проверяет статус демона, если активен - возвращает True, нет - возвращает False
+
+# Функция заходит на VPP по ssh и проверяет статус демона, если активен - возвращает True, нет - возвращает False
 def vpp_check_status(creds):
     user, passwd, ip, port = creds
     client = paramiko.SSHClient()
@@ -26,17 +24,17 @@ def vpp_check_status(creds):
         return True
     else:
         return False
-    
 
-#Функция заходит на VPP по ssh и делает стоп/старт демона vpp с интервалом 10 секунд
+
+# Функция заходит на VPP по ssh и делает стоп/старт демона vpp с интервалом 10 секунд
 def vpp_stop_start(creds):
     list_commands = [
-    'sudo systemctl stop dozor_ngfw_vpp',
-    'sudo sleep 1',
-    'sudo systemctl start dozor_ngfw_vpp',
-    'sudo sleep 15',
-    'sudo systemctl status dozor_ngfw_vpp'
-]
+        'sudo systemctl stop dozor_ngfw_vpp',
+        'sudo sleep 1',
+        'sudo systemctl start dozor_ngfw_vpp',
+        'sudo sleep 15',
+        'sudo systemctl status dozor_ngfw_vpp'
+    ]
     user, passwd, ip, port = creds
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -56,7 +54,8 @@ def vpp_stop_start(creds):
                 return False
     client.close()
 
-#Функция заходит на VPP по ssh и выполняет команды по настройке
+
+# Функция заходит на VPP по ssh и выполняет команды по настройке
 def vpp_configuring_old(creds, commands):
     user, passwd, ip, p = creds
     client = paramiko.SSHClient()
@@ -73,6 +72,7 @@ def vpp_configuring_old(creds, commands):
             sys.exit()
     client.close()
 
+
 # Функция для конфигурации впп
 def vpp_configuring(creds, commands):
     ip, port = creds
@@ -86,7 +86,7 @@ def vpp_configuring(creds, commands):
     telnet.close()
 
 
-#Функция подключается на сервер и запускает там питоновский скрипт который слушает сокет на определенном порту, 
+# Функция подключается на сервер и запускает там питоновский скрипт который слушает сокет на определенном порту,
 # порт передает как аргумет для запуска
 def start_server_socket(creds, traffic):
     user, passwd, ip, p = creds
@@ -99,7 +99,8 @@ def start_server_socket(creds, traffic):
     output = stdout.read().decode()
     error = stderr.read().decode()
 
-#Функция подключается на кдиента и запускает там питоновский скрипт который пытается открыть соединение
+
+# Функция подключается на кдиента и запускает там питоновский скрипт который пытается открыть соединение
 # ип порт и сурс порт задается как параметрами запуска
 def start_client_socket(creds, traffic):
     _, sport, d_ip, dport = traffic
@@ -112,6 +113,7 @@ def start_client_socket(creds, traffic):
     output = stdout.read().decode()
     error = stderr.read().decode()
     print(error)
+
 
 # Функция для захвата трафика, возвращает список строк с дампом
 def get_tcpdump(creds):
@@ -127,31 +129,33 @@ def get_tcpdump(creds):
     client.close()
     return output
 
-#Функция парсинга полученного дампа на приедмет наличия в нем необходимого трафика
-#sip - ип источника для поиска 
-#dip ип назначения для поиска
-#dport порт назначения для поиска
-#sport порт источника для поиска если задан
-#Список содержащий строки из дампа
-#Возвращает true если найдено совпадение в дампе иначе false
+
+# Функция парсинга полученного дампа на предмет наличия в нем необходимого трафика
+# sip - ип источника для поиска
+# dip ип назначения для поиска
+# dport порт назначения для поиска
+# sport порт источника для поиска если задан
+# Список содержащий строки из дампа
+# Возвращает true если найдено совпадение в дампе иначе false
 def parce_dump(traffic, lines, proto):
     sip, sport, dip, dport = traffic
-    finded = False
+    found = False
     to_find = f"{sip}.{sport} > {dip}.{dport}"
     if proto == 'icmp':
         for line in lines:
             if sip in line and 'ICMP' in line and dip in line:
-                finded = True
-                return finded
+                found = True
+                return found
     for line in lines:
         if to_find in line:
-            finded = True
-            return finded
+            found = True
+            return found
 
-#Функция подключается на клиента и запускает там curl до с заданными параметрами
+
+# Функция подключается на клиента и запускает там curl до с заданными параметрами
 # ип порт и сурс порт задается как параметрами запуска
 def start_client(creds, traffic, proto='tcp'):
-    _, sport, d_ip, dport,  = traffic
+    _, sport, d_ip, dport, = traffic
     user, passwd, ip, p = creds
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -183,7 +187,7 @@ def start_client(creds, traffic, proto='tcp'):
         client.close()
 
 
-#Функция подключается на сервер и запускает там питоновский  http сервер на определенном порту
+# Функция подключается на сервер и запускает там питоновский  http сервер на определенном порту
 def start_server(creds, traffic):
     *_, listen_port = traffic
     user, passwd, ip, p = creds
@@ -195,11 +199,3 @@ def start_server(creds, traffic):
     output = stdout.read().decode()
     error = stderr.read().decode()
     client.close()
-
-
-
-
-
-
-
-
