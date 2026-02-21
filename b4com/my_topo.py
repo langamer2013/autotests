@@ -3,11 +3,11 @@ from mininet.node import Host
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
+PACKET_TO_SEND = 1000
 
 def get_packet_count(device, interface):
     tx_packets = device.cmd(f'cat /sys/class/net/{interface}/statistics/tx_packets')
     return int(tx_packets)
-
 
 
 def mynetwork():
@@ -53,14 +53,13 @@ def mynetwork():
     r3.cmd('ip ro add default via 10.0.4.2')
     # h2.cmd('ip route add default via 10.0.0.4') # По умолчанию через r2
     h1.cmd(
-        'python3 -c "from scapy.all import *; sendp(Ether()/IP(dst=\'1.1.1.1\', src=RandIP(\'10.0.0.128/25\'))/TCP(dport=80, sport=444, flags=\'S\'), iface=\'h1-eth0\', count=1000)"')
-    print(get_packet_count(r1, 'r1-eth1'))
-
+        'python3 -c "from scapy.all import *; sendp(Ether()/IP(dst=\'1.1.1.1\', src=RandIP(\'10.0.0.128/25\'))/TCP(dport=80, sport=444, flags=\'S\'), iface=\'h1-eth0\', count=PACKET_TO_SEND)"')
+    interface1 = get_packet_count(r1, 'r1-eth1')
+    interface1 = get_packet_count(r1, 'r1-eth2')
 
     CLI(net)
     net.stop()
 
 
 if __name__ == '__main__':
-    setLogLevel('info')
     mynetwork()
