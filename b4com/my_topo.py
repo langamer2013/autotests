@@ -91,4 +91,4 @@ def mynetwork():
 
 
 if __name__ == '__main__':
-    mynetwork()
+    print(mynetwork())
