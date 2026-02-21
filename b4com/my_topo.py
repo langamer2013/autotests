@@ -49,7 +49,7 @@ def mynetwork():
 
     CLI(net)
     h1.cmd(
-        'python3 -c "from scapy.all import *; send(IP(dst=\'1.1.1.1\', src=RandIP(\'10.0.0.128/25\'))/TCP(dport=80, sport=444, flags=\'S\'), count=100)"')
+        'python3 -c "from scapy.all import *; sendp(Ether()/IP(dst=\'1.1.1.1\', src=RandIP(\'10.0.0.128/25\'))/TCP(dport=80, sport=444, flags=\'S\'), iface=\'h1-eth0\', count=1000)"')
     net.stop()
 
 
