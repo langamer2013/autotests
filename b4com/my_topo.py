@@ -54,7 +54,7 @@ def mynetwork():
     # h2.cmd('ip route add default via 10.0.0.4') # По умолчанию через r2
     h1.cmd(
         'python3 -c "from scapy.all import *; sendp(Ether()/IP(dst=\'1.1.1.1\', src=RandIP(\'10.0.0.128/25\'))/TCP(dport=80, sport=444, flags=\'S\'), iface=\'h1-eth0\', count=1000)"')
-    print(get_packet_count('r1', 'r1-eth1'))
+    print(get_packet_count(r1, 'r1-eth1'))
 
 
     CLI(net)
