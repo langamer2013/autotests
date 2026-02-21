@@ -1,9 +1,36 @@
+# Скрипт запускает mininet со следующей топологией, запускает NUMBER_OF_PACKETS_TO_SEND с хоста h1
+# Параметры генерируемого трафика tcp SYN, rand SRC 10.0.0.128/25:4444, DST 1.1.1.1:80
+# Собирает статистику с выходных портов r1, определяет разницу в % между этими значениями и возвращает FALSE, если разница больше ACCEPTABLE_FLOW_DIFFERENCE
+#        [  h1  ] (Host 1)
+#
+#           | .1
+#           |
+#     (eth0)| 10.0.0.0/24
+#
+#           |
+#           | .2
+#        [  r1  ] (Router 1)
+#        /      \
+#   .1  /        \ .1
+# (eth1)          (eth2)
+#     / 10.0.1.0/24 \ 10.0.2.0/24
+#    /                \
+#   / .2            .2 \
+# [  r2  ]          [  r3  ] (Routers 2 & 3)
+#   \ .1            .1 /
+# (eth1)          (eth1)
+#     \ 10.0.3.0/24 / 10.0.4.0/24
+#      \           /
+#    .2 \         / .2
+#     (eth0)    (eth1)
+#        [  h2  ] (Host 2)
 from mininet.net import Mininet
-from mininet.node import Host
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
-NUMBER_OF_PACKETS_TO_SEND = 1000
+NUMBER_OF_PACKETS_TO_SEND = 1000  # Сколько будет генерировать пакетов
+ACCEPTABLE_FLOW_DIFFERENCE = 5  # Сколько % допустима разница между ECMP группами
+
 
 # Функция принимает имя устройства и имя интерфейса, возвращает кол-во tx пакетов с это интерфейса
 def get_packet_count(device, interface):
@@ -13,8 +40,6 @@ def get_packet_count(device, interface):
 
 def mynetwork():
     net = Mininet(topo=None, build=False)
-
-    info('*** Adding nodes\n')
     h1 = net.addHost('h1', ip='10.0.0.1/24')
     h2 = net.addHost('h2', ip='10.0.3.2/24')  # Основной IP на первом интерфейсе
 
@@ -23,7 +48,7 @@ def mynetwork():
     r2 = net.addHost('r2', ip='10.0.1.2/24')
     r3 = net.addHost('r3', ip='10.0.2.2/24')
 
-    info('*** Creating links\n')
+    # info('*** Creating links\n')
     net.addLink(h1, r1)  # h1-eth0 <-> r1-eth0
     net.addLink(r1, r2)  # r1-eth1 <-> r2-eth0
     net.addLink(r1, r3)  # r1-eth2 <-> r3-eth0
@@ -32,7 +57,7 @@ def mynetwork():
 
     net.start()
 
-    info('*** Configuring IP forwarding and manual IP/Routes\n')
+    # info('*** Configuring IP forwarding and manual IP/Routes\n')
     # Включаем форвардинг на роутерах
     for r in [r1, r2, r3]:
         r.cmd('sysctl -w net.ipv4.ip_forward=1')
@@ -55,13 +80,14 @@ def mynetwork():
     # h2.cmd('ip route add default via 10.0.0.4') # По умолчанию через r2
     h1.cmd(
         f'python3 -c "from scapy.all import *; sendp(Ether()/IP(dst=\'1.1.1.1\', src=RandIP(\'10.0.0.128/25\'))/TCP(dport=80, sport=444, flags=\'S\'), iface=\'h1-eth0\', count={NUMBER_OF_PACKETS_TO_SEND})"')
-    tx_percent_interface1 = round((get_packet_count(r1, 'r1-eth1')/NUMBER_OF_PACKETS_TO_SEND)*100, 2)
-    tx__percent_interface2 = round((get_packet_count(r1, 'r1-eth2')/NUMBER_OF_PACKETS_TO_SEND)*100, 2)
-    print(round(abs(tx_percent_interface1 - tx__percent_interface2)))
-
-
-    #CLI(net)
+    tx_percent_interface1 = round((get_packet_count(r1, 'r1-eth1') / NUMBER_OF_PACKETS_TO_SEND) * 100, 2)
+    tx__percent_interface2 = round((get_packet_count(r1, 'r1-eth2') / NUMBER_OF_PACKETS_TO_SEND) * 100, 2)
+    # CLI(net)
     net.stop()
+    if round(abs(tx_percent_interface1 - tx__percent_interface2)) >> 3:
+        return False
+    else:
+        return True
 
 
 if __name__ == '__main__':
