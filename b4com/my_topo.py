@@ -3,12 +3,13 @@ from mininet.node import Host
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
-def myNetwork():
+
+def mynetwork():
     net = Mininet(topo=None, build=False)
 
     info('*** Adding nodes\n')
     h1 = net.addHost('h1', ip='10.0.0.1/24')
-    h2 = net.addHost('h2', ip='10.0.3.2/24') # Основной IP на первом интерфейсе
+    h2 = net.addHost('h2', ip='10.0.3.2/24')  # Основной IP на первом интерфейсе
 
     # Роутеры в Mininet — это хосты с включенным форвардингом
     r1 = net.addHost('r1', ip='10.0.0.2/24')
@@ -16,11 +17,11 @@ def myNetwork():
     r3 = net.addHost('r3', ip='10.0.2.2/24')
 
     info('*** Creating links\n')
-    net.addLink(h1, r1)          # h1-eth0 <-> r1-eth0
-    net.addLink(r1, r2)          # r1-eth1 <-> r2-eth0
-    net.addLink(r1, r3)          # r1-eth2 <-> r3-eth0
-    net.addLink(r2, h2)          # r2-eth1 <-> h2-eth0
-    net.addLink(r3, h2)          # r3-eth1 <-> h2-eth1 (второй линк к h2)
+    net.addLink(h1, r1)  # h1-eth0 <-> r1-eth0
+    net.addLink(r1, r2)  # r1-eth1 <-> r2-eth0
+    net.addLink(r1, r3)  # r1-eth2 <-> r3-eth0
+    net.addLink(r2, h2)  # r2-eth1 <-> h2-eth0
+    net.addLink(r3, h2)  # r3-eth1 <-> h2-eth1 (второй линк к h2)
 
     net.start()
 
@@ -49,7 +50,7 @@ def myNetwork():
     CLI(net)
     net.stop()
 
+
 if __name__ == '__main__':
     setLogLevel('info')
-    myNetwork()
-
+    mynetwork()
