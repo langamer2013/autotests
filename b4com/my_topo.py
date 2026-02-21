@@ -46,7 +46,8 @@ def mynetwork():
     r2.cmd('ip route add default via 10.0.3.2')
     r3.cmd('ip ro add default via 10.0.4.2')
     # h2.cmd('ip route add default via 10.0.0.4') # По умолчанию через r2
-
+    h1.cmd(
+        'python3 -c "from scapy.all import *; send(IP(dst=\'1.1.1.1\', src=RandIP(\'10.10.10.0/24\'))/TCP(dport=80, sport=4444), count=1000)')
     CLI(net)
     net.stop()
 
@@ -54,3 +55,4 @@ def mynetwork():
 if __name__ == '__main__':
     setLogLevel('info')
     mynetwork()
+
