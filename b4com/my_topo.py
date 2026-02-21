@@ -57,7 +57,8 @@ def mynetwork():
     interface1 = get_packet_count(r1, 'r1-eth1')
     interface1 = get_packet_count(r1, 'r1-eth2')
 
-    CLI(net)
+
+    #CLI(net)
     net.stop()
 
 
