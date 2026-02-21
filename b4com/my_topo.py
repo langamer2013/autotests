@@ -5,6 +5,7 @@ from mininet.log import setLogLevel, info
 
 NUMBER_OF_PACKETS_TO_SEND = 1000
 
+# Функция принимает имя устройства и имя интерфейса, возвращает кол-во tx пакетов с это интерфейса
 def get_packet_count(device, interface):
     tx_packets = device.cmd(f'cat /sys/class/net/{interface}/statistics/tx_packets')
     return int(tx_packets)
@@ -54,7 +55,7 @@ def mynetwork():
     # h2.cmd('ip route add default via 10.0.0.4') # По умолчанию через r2
     h1.cmd(
         f'python3 -c "from scapy.all import *; sendp(Ether()/IP(dst=\'1.1.1.1\', src=RandIP(\'10.0.0.128/25\'))/TCP(dport=80, sport=444, flags=\'S\'), iface=\'h1-eth0\', count={NUMBER_OF_PACKETS_TO_SEND})"')
-    tx_interface1 = get_packet_count(r1, 'r1-eth1')
+    tx_interface1 = round(get_packet_count(r1, 'r1-eth1')/NUMBER_OF_PACKETS_TO_SEND, 2)
     tx_interface2 = get_packet_count(r1, 'r1-eth2')
     print(tx_interface1)
     print(tx_interface2)
